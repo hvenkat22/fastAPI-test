@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List
 
 app = FastAPI()
 
@@ -8,7 +9,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["GET"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -19,7 +20,11 @@ data = [{"name":"KMdM","marks":97},{"name":"Ljxb8yGG","marks":53},{"name":"Ktc",
 marks_dict = {item["name"]: item["marks"] for item in data}
 
 @app.get("/")
-async def get_marks(request: Request):
-    names = request.query_params.getlist("name")
-    results = [marks_dict.get(name, None) for name in names]
-    return JSONResponse(content={"marks": results})
+async def root():
+    return {"message": "Use /api?name=Alice&name=Bob"}
+
+@app.get("/api")
+async def get_marks(name: List[str] = None):
+    name_to_marks = {entry["name"]: entry["marks"] for entry in data}
+    result = [name_to_marks.get(n, None) for n in name]
+    return JSONResponse(content={"marks": result})
